@@ -1,14 +1,14 @@
 <?php
 /**
  * Plugin Name:       Alt Text Manager
- * Plugin URI:        https://horshamct.org.uk
- * Description:       Find, audit, and AI-generate alt text for images across your Media Library, post content, featured images and SEO images — powered by the WordPress 7 AI Client.
+ * Plugin URI:        https://github.com/pjd199/alt-text-manager
+ * Description:       Find, audit, and AI-generate alt text for images across your Media Library.
  * Version:           1.0.0
  * Requires at least: 7.0
  * Requires PHP:      7.4
- * Author:            Horsham Churches Together
- * Text Domain:        alt-text-manager
- * License:           GPL v2 or later
+ * Author:            Pete Dibdin
+ * Text Domain:       alt-text-manager
+ * License:           MIT
  *
  * @package AltTextManager
  */

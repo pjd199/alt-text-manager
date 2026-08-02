@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class ATM_Settings {
 
 	private static $instance = null;
+	private static $default_system_instruction = null;
 
 	public static function instance() {
 		if ( null === self::$instance ) {
@@ -23,6 +24,13 @@ class ATM_Settings {
 
 	private function __construct() {
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+	}
+
+	public static function get_default_system_instruction() {
+		if ( null === self::$default_system_instruction ) {
+			self::$default_system_instruction = require ATM_PLUGIN_DIR . 'includes/data/default-system-instruction.php';
+		}
+		return self::$default_system_instruction;
 	}
 
 	/**
@@ -38,7 +46,7 @@ class ATM_Settings {
 			'scan_branding'           => 1,
 			'model_choice'            => 'auto', // 'auto' or 'manual'.
 			'model_preference'        => 'claude-sonnet-4-6, gpt-5.1, gemini-3.1-pro-preview',
-			'system_instruction'      => "You are an accessibility expert that writes alt text for website images. Keep it under 125 characters. Describe the visible content objectively and in plain language. Do not start with \"Image of\" or \"Photo of\". Mention text visible in the image if any. Return plain text only, no punctuation at the end.",
+			'system_instruction' => self::get_default_system_instruction(),
 			'batch_size'              => 5,
 		);
 	}
@@ -212,8 +220,10 @@ class ATM_Settings {
 					<tr>
 						<th scope="row"><label for="atm_system_instruction"><?php esc_html_e( 'Prompt instructions', 'alt-text-manager' ); ?></label></th>
 						<td>
-							<textarea id="atm_system_instruction" name="<?php echo esc_attr( ATM_OPTION_KEY ); ?>[system_instruction]" rows="4" class="large-text"><?php echo esc_textarea( $settings['system_instruction'] ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'The system instruction sent to the AI model when generating alt text.', 'alt-text-manager' ); ?></p>
+							<textarea id="atm_system_instruction" name="<?php echo esc_attr( ATM_OPTION_KEY ); ?>[system_instruction]" rows="4" class="large-text" data-default="<?php echo esc_attr( self::get_defaults()['system_instruction'] ); ?>"><?php echo esc_textarea( $settings['system_instruction'] ); ?></textarea>
+							<p class="description"><?php esc_html_e( 'The system instruction sent to the AI model when generating alt text.', 'alt-text-manager' ); ?>
+								<a href="#" id="atm-reset-prompt-btn"><?php esc_html_e( 'Reset to default', 'alt-text-manager' ); ?></a>
+							</p>
 						</td>
 					</tr>
 				</table>

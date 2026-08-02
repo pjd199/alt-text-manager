@@ -79,6 +79,17 @@
 	} );
 
 	/**
+	 * Settings page: reset the prompt instructions textarea back to the
+	 * plugin default (does not save — the user still has to click
+	 * "Save Changes" to persist it, same as any other field edit).
+	 */
+	$( '#atm-reset-prompt-btn' ).on( 'click', function ( e ) {
+		e.preventDefault();
+		var $textarea = $( '#atm_system_instruction' );
+		$textarea.val( $textarea.data( 'default' ) );
+	} );
+
+	/**
 	 * Rescan button — clears the usage cache and reloads the list.
 	 */
 	$( '#atm-rescan-btn' ).on( 'click', function () {

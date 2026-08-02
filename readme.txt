@@ -3,7 +3,7 @@ Requires at least: 7.0
 Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 1.0.0
-License: GPLv2 or later
+License: MIT
 
 Find, audit, and AI-generate alt text for images used across your site, powered by the WordPress 7 AI Client.
 
