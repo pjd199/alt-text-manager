@@ -82,9 +82,16 @@ class ATM_AI_Generator {
 			->using_system_instruction( $settings['system_instruction'] )
 			->with_file( $file_path, $mime_type );
 
-		$model_preference = ATM_Settings::get_model_preference_list();
-		if ( ! empty( $model_preference ) ) {
-			$builder = $builder->using_model_preference( ...$model_preference );
+		// Replace model preference handling in generate_for_attachment():
+		$provider = ATM_Settings::get_option( 'ai_provider' );
+		$model    = ATM_Settings::get_option( 'ai_model' );
+
+		if ( $provider && 'auto' !== $provider ) {
+			$builder = $builder->using_provider( $provider );
+		}
+
+		if ( $model && 'auto' !== $model ) {
+			$builder = $builder->using_model_preference( $model );
 		}
 
 		$result = $builder->generate_text();

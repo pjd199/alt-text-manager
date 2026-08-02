@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+
 class ATM_Settings {
 
 	private static $instance = null;
@@ -44,9 +45,9 @@ class ATM_Settings {
 			'scan_featured'           => 1,
 			'scan_seo'                => 1,
 			'scan_branding'           => 1,
-			'model_choice'            => 'auto', // 'auto' or 'manual'.
-			'model_preference'        => 'claude-sonnet-4-6, gpt-5.1, gemini-3.1-pro-preview',
-			'system_instruction' => self::get_default_system_instruction(),
+			'ai_provider'             => 'auto',
+			'ai_model'                => 'auto',
+			'system_instruction'      => self::get_default_system_instruction(),
 			'batch_size'              => 5,
 		);
 	}
@@ -98,7 +99,8 @@ class ATM_Settings {
 		}
 		$output['post_types'] = $post_types ? $post_types : $defaults['post_types'];
 
-		$output['model_choice'] = ( isset( $input['model_choice'] ) && 'manual' === $input['model_choice'] ) ? 'manual' : 'auto';
+		$output['ai_provider'] = isset( $input['ai_provider'] ) ? sanitize_text_field( $input['ai_provider'] ) : 'auto';
+		$output['ai_model']    = isset( $input['ai_model'] ) ? sanitize_text_field( $input['ai_model'] ) : 'auto';
 
 		$pref = isset( $input['model_preference'] ) ? sanitize_text_field( wp_unslash( $input['model_preference'] ) ) : '';
 		// Keep only comma separated word-ish tokens (model ids).
@@ -117,19 +119,6 @@ class ATM_Settings {
 	}
 
 	/**
-	 * Turn the stored comma separated model preference string into an
-	 * array of model ids, in priority order.
-	 */
-	public static function get_model_preference_list() {
-		if ( 'manual' !== self::get_option( 'model_choice' ) ) {
-			return array();
-		}
-		$raw = (string) self::get_option( 'model_preference' );
-		$ids = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
-		return array_values( $ids );
-	}
-
-	/**
 	 * Render the Settings page.
 	 */
 	public function render_page() {
@@ -138,18 +127,53 @@ class ATM_Settings {
 		}
 		$settings         = self::get();
 		$ai_available     = function_exists( 'wp_ai_client_prompt' );
-		$vision_supported = null;
 
 		if ( $ai_available ) {
 			// Feature-detection call only — this performs no API request.
 			$builder          = wp_ai_client_prompt( 'test' );
-			$vision_supported = method_exists( $builder, 'is_supported_for_text_generation' )
+			$ai_supported = method_exists( $builder, 'is_supported_for_text_generation' )
 				? $builder->is_supported_for_text_generation()
 				: null;
 		}
 
 		$public_post_types = get_post_types( array( 'public' => true ), 'objects' );
 		unset( $public_post_types['attachment'] );
+
+		// Build providers array using the WordPress AI Client library
+		$providers_data = array();
+
+		if ( class_exists( \WordPress\AiClient\AiClient::class ) ) {
+			try {
+				$registry     = \WordPress\AiClient\AiClient::defaultRegistry();
+				$provider_ids = $registry->getRegisteredProviderIds();
+
+				foreach ( $provider_ids as $provider_id ) {
+					$provider_class = $registry->getProviderClassName( $provider_id );
+					$metadata       = $provider_class::metadata();
+					$model_dir      = $provider_class::modelMetadataDirectory();
+					$models         = $model_dir->listModelMetadata();
+					$available_models  = array();
+
+					foreach ( $models as $model ) {						
+						$model_id                   = method_exists( $model, 'getId' ) ? $model->getId() : (string) $model;
+						$model_name                 = method_exists( $model, 'getName' ) ? $model->getName() : $model_id;
+						$available_models[ $model_id ] = $model_name;
+					}
+
+					if ( ! empty( $available_models ) ) {
+						$providers_data[ $provider_id ] = array(
+							'label'  => $metadata->getName(),
+							'models' => $available_models,
+						);
+					}
+				}
+			} catch ( \Throwable $e ) {
+				// Silently catch registry lookup errors
+			}
+		}		
+		// Pass data to JS for dynamic dependent dropdown updating
+		wp_localize_script( 'atm-admin', 'ATM_AI_Models', $providers_data );
+
 		?>
 		<div class="wrap atm-wrap">
 			<h1><?php esc_html_e( 'Alt Text Manager — Settings', 'alt-text-manager' ); ?></h1>
@@ -160,7 +184,7 @@ class ATM_Settings {
 						<strong><?php esc_html_e( 'WordPress AI Client not detected.', 'alt-text-manager' ); ?></strong>
 						<?php esc_html_e( 'This plugin needs WordPress 7.0+ with the built-in AI Client. Manual alt text auditing below will still work, but AI generation will not.', 'alt-text-manager' ); ?>
 					</p>
-				<?php elseif ( false === $vision_supported ) : ?>
+				<?php elseif ( false === $ai_supported ) : ?>
 					<p>
 						<strong><?php esc_html_e( 'No AI provider is configured yet.', 'alt-text-manager' ); ?></strong>
 						<?php
@@ -194,27 +218,24 @@ class ATM_Settings {
 				<h2 class="title"><?php esc_html_e( 'AI Model', 'alt-text-manager' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Model selection', 'alt-text-manager' ); ?></th>
+						<th scope="row"><label for="atm_ai_provider"><?php esc_html_e( 'AI Provider', 'alt-text-manager' ); ?></label></th>
 						<td>
-							<fieldset>
-								<label>
-									<input type="radio" name="<?php echo esc_attr( ATM_OPTION_KEY ); ?>[model_choice]" value="auto" <?php checked( 'auto', $settings['model_choice'] ); ?> />
-									<?php esc_html_e( 'Let WordPress choose the model automatically', 'alt-text-manager' ); ?>
-								</label>
-								<p class="description"><?php esc_html_e( 'WordPress will pick the best available model from whatever providers are connected under Settings → Connectors.', 'alt-text-manager' ); ?></p>
-								<br />
-								<label>
-									<input type="radio" name="<?php echo esc_attr( ATM_OPTION_KEY ); ?>[model_choice]" value="manual" <?php checked( 'manual', $settings['model_choice'] ); ?> />
-									<?php esc_html_e( 'Prefer specific models, in order', 'alt-text-manager' ); ?>
-								</label>
-								<p>
-									<input type="text" class="regular-text" style="width:32em;" name="<?php echo esc_attr( ATM_OPTION_KEY ); ?>[model_preference]" value="<?php echo esc_attr( $settings['model_preference'] ); ?>" />
-									<br />
-									<span class="description">
-										<?php esc_html_e( 'Comma-separated model IDs, most preferred first, e.g. claude-sonnet-4-6, gpt-5.1, gemini-3.1-pro-preview. WordPress uses the first one that is actually available and falls back automatically if none of them are configured.', 'alt-text-manager' ); ?>
-									</span>
-								</p>
-							</fieldset>
+							<select id="atm_ai_provider" name="<?php echo esc_attr( ATM_OPTION_KEY ); ?>[ai_provider]">
+								<option value="auto" <?php selected( 'auto', $settings['ai_provider'] ); ?>><?php esc_html_e( 'Auto-select Provider', 'alt-text-manager' ); ?></option>
+								<?php foreach ( $providers_data as $pid => $pdata ) : ?>
+									<option value="<?php echo esc_attr( $pid ); ?>" <?php selected( $pid, $settings['ai_provider'] ); ?>>
+										<?php echo esc_html( $pdata['label'] ); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="atm_ai_model"><?php esc_html_e( 'AI Model', 'alt-text-manager' ); ?></label></th>
+						<td>
+							<select id="atm_ai_model" name="<?php echo esc_attr( ATM_OPTION_KEY ); ?>[ai_model]" data-current="<?php echo esc_attr( $settings['ai_model'] ); ?>">
+								<option value="auto"><?php esc_html_e( 'Auto-select Model', 'alt-text-manager' ); ?></option>
+							</select>
 						</td>
 					</tr>
 					<tr>

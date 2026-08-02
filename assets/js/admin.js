@@ -90,6 +90,43 @@
 	} );
 
 	/**
+	 * Settings page: Dynamic Provider/Model cascading dropdown handling.
+	 */
+	jQuery( document ).ready( function ( $ ) {
+		var aiData = window.ATM_AI_Models || {};
+		var $providerSelect = $( '#atm_ai_provider' );
+		var $modelSelect = $( '#atm_ai_model' );
+
+		function updateModelDropdown() {
+			var selectedProvider = $providerSelect.val();
+			var currentModel = $modelSelect.data( 'current' ) || $modelSelect.val();
+
+			$modelSelect.empty().append( new Option( 'Auto-select Model', 'auto' ) );
+
+			if ( selectedProvider !== 'auto' && aiData[selectedProvider] ) {
+				var models = aiData[selectedProvider].models;
+				$.each( models, function ( id, label ) {
+					var opt = new Option( label, id );
+					if ( id === currentModel ) {
+						opt.selected = true;
+					}
+					$modelSelect.append( opt );
+				} );
+			}
+		}
+
+		$providerSelect.on( 'change', function () {
+			$modelSelect.data( 'current', '' ); // Reset selection context on manual provider change
+			updateModelDropdown();
+		} );
+
+		// Initialize state on load
+		if ( $providerSelect.length ) {
+			updateModelDropdown();
+		}
+	} );
+
+	/**
 	 * Rescan button — clears the usage cache and reloads the list.
 	 */
 	$( '#atm-rescan-btn' ).on( 'click', function () {
