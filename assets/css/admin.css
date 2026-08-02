@@ -1,0 +1,81 @@
+.atm-wrap .atm-toolbar {
+	margin: 12px 0;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.atm-wrap #atm-rescan-status,
+.atm-wrap #atm-batch-progress {
+	color: #646970;
+	font-style: italic;
+}
+
+.atm-status-box {
+	background: #fff;
+	border-left: 4px solid #72aee6;
+	padding: 12px 16px;
+	margin: 16px 0;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.atm-status-box.atm-status-warn {
+	border-left-color: #dba617;
+}
+
+.atm-status-box.atm-status-ok {
+	border-left-color: #00a32a;
+}
+
+.atm-usage-list {
+	margin: 0;
+	list-style: none;
+}
+
+.atm-usage-list li {
+	margin-bottom: 2px;
+	font-size: 12px;
+}
+
+.atm-badge {
+	display: inline-block;
+	font-size: 10px;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	padding: 1px 6px;
+	border-radius: 3px;
+	background: #f0f0f1;
+	color: #3c434a;
+	margin-right: 4px;
+}
+
+.atm-badge-content { background: #e5f5fa; color: #0a4b78; }
+.atm-badge-featured { background: #eaf7e5; color: #1e5e20; }
+.atm-badge-seo { background: #fbeee0; color: #8a4b00; }
+.atm-badge-branding { background: #f2e5fa; color: #5a1e8a; }
+
+.atm-alt-input {
+	width: 100%;
+	max-width: 420px;
+}
+
+.atm-alt-status {
+	margin-left: 6px;
+	font-size: 12px;
+}
+
+.atm-alt-status.is-saving { color: #646970; }
+.atm-alt-status.is-saved { color: #00a32a; }
+.atm-alt-status.is-error { color: #d63638; }
+
+.atm-generate-btn[disabled] {
+	opacity: 0.6;
+}
+
+.wp-list-table .column-thumb {
+	width: 50px;
+}
+
+.wp-list-table .column-actions {
+	width: 160px;
+}
