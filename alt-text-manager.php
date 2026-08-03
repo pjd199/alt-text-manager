@@ -3,7 +3,7 @@
  * Plugin Name:       Alt Text Manager
  * Plugin URI:        https://github.com/pjd199/alt-text-manager
  * Description:       Find, audit, and AI-generate alt text for images across your Media Library.
- * Version:           1.0.3
+ * Version:           1.0.4
  * Update URI:        https://github.com/pjd199/alt-text-manager
  * Requires at least: 7.0
  * Requires PHP:      7.4

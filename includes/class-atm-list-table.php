@@ -153,7 +153,7 @@ class ATM_List_Table extends WP_List_Table {
 
 	public function no_items() {
 		if ( 'missing' === $this->mode ) {
-			esc_html_e( 'Nothing missing — every used image currently has alt text. 🎉', 'alt-text-manager' );
+			esc_html_e( 'Nothing missing — every used image currently has alt text.', 'alt-text-manager' );
 		} else {
 			esc_html_e( 'No images found in the Media Library.', 'alt-text-manager' );
 		}
