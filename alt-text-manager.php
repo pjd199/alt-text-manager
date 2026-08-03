@@ -17,17 +17,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // No direct access.
 }
 
-define( 'ATM_VERSION', '1.0.0' );
+define( 'ATM_VERSION', '1.0.1' );
 define( 'ATM_PLUGIN_FILE', __FILE__ );
 define( 'ATM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ATM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'ATM_OPTION_KEY', 'atm_settings' );
 define( 'ATM_SCAN_TRANSIENT', 'atm_used_images_scan' );
 
+// Load Composer Autoloader
+if (file_exists(ATM_PLUGIN_DIR . 'vendor/autoload.php')) {
+    require_once ATM_PLUGIN_DIR . 'vendor/autoload.php';
+}
+
 /**
- * Autoload-free require of plugin classes. Kept simple and explicit on purpose,
- * so the load order is obvious and there is no Composer dependency required
- * just to run this plugin.
+ * Load modules
  */
 require_once ATM_PLUGIN_DIR . 'includes/class-atm-settings.php';
 require_once ATM_PLUGIN_DIR . 'includes/class-atm-scanner.php';
@@ -72,3 +75,14 @@ function atm_deactivate() {
 	delete_transient( ATM_SCAN_TRANSIENT );
 }
 register_deactivation_hook( __FILE__, 'atm_deactivate' );
+
+/**
+ * Check for latest updates from GitHub
+ */ 
+$updateChecker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+	'https://github.com/pjd199/alt-text-manager/',
+	ATM_PLUGIN_FILE,
+	'alt-text-manager'
+);
+$updateChecker->setBranch('main');
+$updateChecker->getVcsApi()->enableReleaseAssets('/alt-text-manager-\d+\.\d+\.\d+\.zip($|[?&#])/i');

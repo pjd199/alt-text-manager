@@ -1,0 +1,7 @@
+{
+    "name": "pjd199/alt-text-manager",
+    "description": "Alt Text Manager",
+    "require": {
+        "yahnis-elsts/plugin-update-checker": "^5.6"
+    }
+}

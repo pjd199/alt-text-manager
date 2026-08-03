@@ -31,6 +31,10 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Install PHP Dependancies
+        run: |
+          composer install --no-dev --optimize-autoloader
+
       - name: Create Plugin ZIP
         run: |
           mkdir -p ${{ env.PLUGIN_SLUG }}
@@ -39,6 +43,7 @@ jobs:
           cp ${{ env.PLUGIN_SLUG }}.php ${{ env.PLUGIN_SLUG }}/
           cp -r assets ${{ env.PLUGIN_SLUG }}/
           cp -r includes ${{ env.PLUGIN_SLUG }}/
+          cp -r vendor ${{ env.PLUGIN_SLUG }}/
           cp uninstall.php ${{ env.PLUGIN_SLUG }}/
           cp readme.txt ${{ env.PLUGIN_SLUG }}/
           cp LICENSE ${{ env.PLUGIN_SLUG }}/
