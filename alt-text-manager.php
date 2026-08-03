@@ -3,7 +3,8 @@
  * Plugin Name:       Alt Text Manager
  * Plugin URI:        https://github.com/pjd199/alt-text-manager
  * Description:       Find, audit, and AI-generate alt text for images across your Media Library.
- * Version:           1.0.2
+ * Version:           1.0.3
+ * Update URI:        https://github.com/pjd199/alt-text-manager
  * Requires at least: 7.0
  * Requires PHP:      7.4
  * Author:            Pete Dibdin
@@ -17,10 +18,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // No direct access.
 }
 
-define( 'ATM_VERSION', '1.0.2' );
+// Ensure get_plugin_data() is available
+if ( ! function_exists( 'get_plugin_data' ) ) {
+	require_once ABSPATH . 'wp-admin/includes/plugin.php';
+}
+
+$atm_plugin_data = get_plugin_data( __FILE__, false, false );
+
+error_log(print_r($atm_plugin_data, true));
+
+define( 'ATM_VERSION',     $atm_plugin_data['Version'] );
+define( 'ATM_TEXT_DOMAIN', $atm_plugin_data['TextDomain'] );
 define( 'ATM_PLUGIN_FILE', __FILE__ );
 define( 'ATM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ATM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'ATM_UPDATE_URI', $atm_plugin_data['UpdateURI']);
 define( 'ATM_OPTION_KEY', 'atm_settings' );
 define( 'ATM_SCAN_TRANSIENT', 'atm_used_images_scan' );
 
@@ -28,16 +40,6 @@ define( 'ATM_SCAN_TRANSIENT', 'atm_used_images_scan' );
 if (file_exists(ATM_PLUGIN_DIR . 'vendor/autoload.php')) {
     require_once ATM_PLUGIN_DIR . 'vendor/autoload.php';
 }
-
-/**
- * Load modules
- */
-require_once ATM_PLUGIN_DIR . 'includes/class-atm-settings.php';
-require_once ATM_PLUGIN_DIR . 'includes/class-atm-scanner.php';
-require_once ATM_PLUGIN_DIR . 'includes/class-atm-ai-generator.php';
-require_once ATM_PLUGIN_DIR . 'includes/class-atm-list-table.php';
-require_once ATM_PLUGIN_DIR . 'includes/class-atm-ajax.php';
-require_once ATM_PLUGIN_DIR . 'includes/class-atm-admin.php';
 
 /**
  * Boot the plugin. Everything is instantiated on `plugins_loaded` so that
@@ -80,9 +82,9 @@ register_deactivation_hook( __FILE__, 'atm_deactivate' );
  * Check for latest updates from GitHub
  */ 
 $updateChecker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
-	'https://github.com/pjd199/alt-text-manager/',
+	ATM_UPDATE_URI,
 	ATM_PLUGIN_FILE,
-	'alt-text-manager'
+	ATM_TEXT_DOMAIN
 );
 $updateChecker->setBranch('main');
-$updateChecker->getVcsApi()->enableReleaseAssets('/alt-text-manager-\d+\.\d+\.\d+\.zip($|[?&#])/i');
+$updateChecker->getVcsApi()->enableReleaseAssets('/' . ATM_TEXT_DOMAIN . '-\d+\.\d+\.\d+\.zip($|[?&#])/i');
