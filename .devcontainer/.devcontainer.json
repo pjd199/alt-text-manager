@@ -1,0 +1,13 @@
+{
+  "postCreateCommand": {
+    "composer-install": "composer install",
+    "download-wpc": "sudo curl -L -o /usr/local/bin/wpc https://raw.githubusercontent.com/pjd199/wordpress-codespace/refs/tags/0.0.7/wpc.sh",
+    "chmod-wpc": "sudo chmod 777 /usr/local/bin/wpc"
+  },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": { 
+        "label": "WordPress", 
+        "onAutoForward": "openBrowserOnce" }
+  }
+}
