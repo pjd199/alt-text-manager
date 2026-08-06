@@ -49,6 +49,7 @@ class ATM_Settings {
 			'ai_model'                => 'auto',
 			'system_instruction'      => self::get_default_system_instruction(),
 			'batch_size'              => 5,
+			'always_use_alt_text'     => 1,
 		);
 	}
 
@@ -111,6 +112,8 @@ class ATM_Settings {
 
 		$batch_size            = isset( $input['batch_size'] ) ? absint( $input['batch_size'] ) : $defaults['batch_size'];
 		$output['batch_size']  = min( 20, max( 1, $batch_size ) );
+
+		$output['always_use_alt_text'] = ! empty( $input['always_use_alt_text'] ) ? 1 : 0;
 
 		// Clear the used-images cache whenever scan scope settings change.
 		delete_transient( ATM_SCAN_TRANSIENT );
@@ -265,6 +268,19 @@ class ATM_Settings {
 						<td>
 							<input type="number" id="atm_batch_size" min="1" max="20" name="<?php echo esc_attr( ATM_OPTION_KEY ); ?>[batch_size]" value="<?php echo esc_attr( $settings['batch_size'] ); ?>" class="small-text" />
 							<p class="description"><?php esc_html_e( 'How many images to process per batch step when running the bulk AI generator (1–20). Lower this if you hit provider rate limits.', 'alt-text-manager' ); ?></p>
+						</td>
+					</tr>
+				</table>
+
+				<h2 class="title"><?php esc_html_e( 'Page Generation', 'alt-text-manager' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Alt Text Usage', 'alt-text-manager' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="<?php echo esc_attr( ATM_OPTION_KEY ); ?>[always_use_alt_text]" value="1" <?php checked( 1, $settings['always_use_alt_text'] ); ?> />
+								<?php esc_html_e( 'Override theme and always use alt text', 'alt-text-manager' ); ?>
+							</label>
 						</td>
 					</tr>
 				</table>

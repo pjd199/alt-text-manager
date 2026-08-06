@@ -25,8 +25,6 @@ if ( ! function_exists( 'get_plugin_data' ) ) {
 
 $atm_plugin_data = get_plugin_data( __FILE__, false, false );
 
-error_log(print_r($atm_plugin_data, true));
-
 define( 'ATM_VERSION',     $atm_plugin_data['Version'] );
 define( 'ATM_TEXT_DOMAIN', $atm_plugin_data['TextDomain'] );
 define( 'ATM_PLUGIN_FILE', __FILE__ );
@@ -51,6 +49,7 @@ function atm_boot() {
 	ATM_Scanner::instance();
 	ATM_AI_Generator::instance();
 	ATM_Ajax::instance();
+	ATM_Override_Alt_Text::instance();
 
 	if ( is_admin() ) {
 		ATM_Admin::instance();
